@@ -109,8 +109,7 @@ go run ./cmd/scp update-permissions \
     --base-url <url> --token <token> \
     --user <user-id> \
     --allow-sub "msg.enhanced,_INBOX.>" \
-    --allow-pub "msg.final,_INBOX.>" \
-    --deny-pub ">"
+    --allow-pub "msg.final,_INBOX.>"
 ```
 
 ### Download the credentials file
@@ -139,7 +138,7 @@ curl -X PATCH "<base-url>/core/beta/nats-users/<user-id>" \
     -H "Content-Type: application/json" \
     -d '{
         "jwt_settings": {
-            "pub": {"allow": ["msg.final", "_INBOX.>"], "deny": [">"]},
+            "pub": {"allow": ["msg.final", "_INBOX.>"]},
             "sub": {"allow": ["msg.enhanced", "_INBOX.>"]}
         }
     }'
@@ -156,14 +155,13 @@ curl -X POST "<base-url>/core/beta/nats-users/<user-id>/creds" \
 
 | Pattern | Use when | SCP JSON | Equivalent nsc flags |
 |---------|----------|----------|---------------------|
-| **Publish only** | Produces messages | `pub.allow: ["msg.raw"]` `sub.allow: ["_INBOX.>"]` `sub.deny: [">"]` | `--allow-pub msg.raw --allow-sub _INBOX.> --deny-sub >` |
-| **Subscribe only** | Consumes messages | `sub.allow: ["msg.final","_INBOX.>"]` `pub.allow: ["_INBOX.>"]` `pub.deny: [">"]` | `--allow-sub msg.final,_INBOX.> --allow-pub _INBOX.> --deny-pub >` |
-| **Processor** | Reads + writes | `sub.allow: ["msg.enhanced","_INBOX.>"]` `pub.allow: ["msg.final","_INBOX.>"]` `pub.deny: [">"]` | `--allow-sub msg.enhanced,_INBOX.> --allow-pub msg.final,_INBOX.> --deny-pub >` |
-| **Wildcard sub** | Monitors all | `sub.allow: ["msg.>","_INBOX.>"]` `pub.allow: ["_INBOX.>"]` `pub.deny: [">"]` | `--allow-sub msg.>,_INBOX.> --allow-pub _INBOX.> --deny-pub >` |
+| **Publish only** | Produces messages | `pub.allow: ["msg.raw","_INBOX.>"]` `sub.allow: ["_INBOX.>"]` | `--allow-pub msg.raw,_INBOX.> --allow-sub _INBOX.>` |
+| **Subscribe only** | Consumes messages | `sub.allow: ["msg.final","_INBOX.>"]` `pub.allow: ["_INBOX.>"]` | `--allow-sub msg.final,_INBOX.> --allow-pub _INBOX.>` |
+| **Processor** | Reads + writes | `sub.allow: ["msg.enhanced","_INBOX.>"]` `pub.allow: ["msg.final","_INBOX.>"]` | `--allow-sub msg.enhanced,_INBOX.> --allow-pub msg.final,_INBOX.>` |
+| **Wildcard sub** | Monitors all | `sub.allow: ["msg.>","_INBOX.>"]` `pub.allow: ["_INBOX.>"]` | `--allow-sub msg.>,_INBOX.> --allow-pub _INBOX.>` |
 
 The `_INBOX.>` entries are required — the NATS client uses request-reply
-internally during connection setup. Always include deny rules to prevent
-accidental wildcard access.
+internally during connection setup.
 
 ---
 
@@ -227,8 +225,7 @@ go run ./cmd/scp update-permissions \
     --base-url $SCP_BASE_URL --token $SCP_TOKEN \
     --user <user-id> \
     --allow-sub "msg.enhanced,_INBOX.>" \
-    --allow-pub "msg.final,_INBOX.>" \
-    --deny-pub ">"
+    --allow-pub "msg.final,_INBOX.>"
 ```
 
 ### 7c. Download credentials
@@ -317,7 +314,6 @@ func main() {
     err = client.UpdateUserPermissions(ctx, user.ID, infrastructure.Permissions{
         Pub: &infrastructure.Permission{
             Allow: []string{"msg.output", "_INBOX.>"},
-            Deny:  []string{">"},
         },
         Sub: &infrastructure.Permission{
             Allow: []string{"msg.input", "_INBOX.>"},
@@ -447,8 +443,7 @@ go run ./cmd/scp update-permissions \
     --base-url <url> --token <token> \
     --user <user-id> \
     --allow-sub "<your-subjects>,_INBOX.>" \
-    --allow-pub "<your-subjects>,_INBOX.>" \
-    --deny-pub ">"
+    --allow-pub "<your-subjects>,_INBOX.>"
 ```
 
 ### Credentials work with nsc but not SCP (or vice versa)

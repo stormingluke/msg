@@ -238,27 +238,23 @@ type pipelineUser struct {
 var pipelineUsers = []pipelineUser{
 	{
 		Name:     "publisher",
-		AllowPub: []string{"msg.raw"},
+		AllowPub: []string{"msg.raw", "_INBOX.>"},
 		AllowSub: []string{"_INBOX.>"},
-		DenySub:  []string{">"},
 	},
 	{
 		Name:     "subscriber",
 		AllowPub: []string{"_INBOX.>"},
 		AllowSub: []string{"msg.raw", "msg.enhanced", "msg.final", "_INBOX.>"},
-		DenyPub:  []string{">"},
 	},
 	{
 		Name:     "processor",
 		AllowPub: []string{"msg.enhanced", "_INBOX.>"},
 		AllowSub: []string{"msg.raw", "_INBOX.>"},
-		DenyPub:  []string{">"},
 	},
 	{
 		Name:     "postprocessor",
 		AllowPub: []string{"msg.final", "_INBOX.>"},
 		AllowSub: []string{"msg.enhanced", "_INBOX.>"},
-		DenyPub:  []string{">"},
 	},
 }
 

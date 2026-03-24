@@ -122,25 +122,21 @@ service does:
 ```bash
 nsc edit user --name <your-service> --account high-007 \
     --allow-sub "<subjects-to-read>" \
-    --allow-pub "<subjects-to-write>,_INBOX.>" \
-    --deny-pub ">"
+    --allow-pub "<subjects-to-write>,_INBOX.>"
 ```
 
 ### Permissions cheat sheet
 
 | Pattern | Use when | Example flags |
 |---------|----------|---------------|
-| **Publish only** | Service produces messages but doesn't consume | `--allow-pub "msg.raw" --allow-sub "_INBOX.>" --deny-sub ">"` |
-| **Subscribe only** | Service consumes messages but doesn't produce | `--allow-sub "msg.final,_INBOX.>" --allow-pub "_INBOX.>" --deny-pub ">"` |
-| **Processor (sub + pub)** | Service reads from one subject, writes to another | `--allow-sub "msg.enhanced,_INBOX.>" --allow-pub "msg.final,_INBOX.>" --deny-pub ">"` |
-| **Wildcard subscriber** | Service monitors all messages under a prefix | `--allow-sub "msg.>,_INBOX.>" --allow-pub "_INBOX.>" --deny-pub ">"` |
+| **Publish only** | Service produces messages but doesn't consume | `--allow-pub "msg.raw,_INBOX.>" --allow-sub "_INBOX.>"` |
+| **Subscribe only** | Service consumes messages but doesn't produce | `--allow-sub "msg.final,_INBOX.>" --allow-pub "_INBOX.>"` |
+| **Processor (sub + pub)** | Service reads from one subject, writes to another | `--allow-sub "msg.enhanced,_INBOX.>" --allow-pub "msg.final,_INBOX.>"` |
+| **Wildcard subscriber** | Service monitors all messages under a prefix | `--allow-sub "msg.>,_INBOX.>" --allow-pub "_INBOX.>"` |
 
 The `_INBOX.>` entries are required — the NATS client uses request-reply
 internally during connection setup. Without them, connections fail with a
 permissions violation.
-
-The `--deny-pub ">"` prevents your service from accidentally publishing to
-subjects it shouldn't. Always include it.
 
 ### Generate the credentials file
 
@@ -223,8 +219,7 @@ nsc add user --name postprocessor --account high-007
 
 nsc edit user --name postprocessor --account high-007 \
     --allow-sub "msg.enhanced,_INBOX.>" \
-    --allow-pub "msg.final,_INBOX.>" \
-    --deny-pub ">"
+    --allow-pub "msg.final,_INBOX.>"
 ```
 
 The postprocessor can subscribe to `msg.enhanced` and publish to `msg.final`.
@@ -362,13 +357,10 @@ Common permission patterns for services in the pipeline:
 
 | Role | Allow publish | Allow subscribe | Example service |
 |------|--------------|-----------------|-----------------|
-| Producer | `msg.<subject>` | `_INBOX.>` | publisher |
+| Producer | `msg.<subject>,_INBOX.>` | `_INBOX.>` | publisher |
 | Consumer | `_INBOX.>` | `msg.<subject>,_INBOX.>` | subscriber |
 | Processor | `msg.<out>,_INBOX.>` | `msg.<in>,_INBOX.>` | processor, postprocessor |
 | Monitor | `_INBOX.>` | `msg.>,_INBOX.>` | dashboard, logger |
-
-All roles should include `--deny-pub ">"` (or `--deny-sub ">"` for producers)
-to prevent accidental wildcard access.
 
 ### Subject naming conventions
 

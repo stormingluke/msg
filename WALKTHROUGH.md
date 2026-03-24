@@ -83,7 +83,7 @@ need:
 
 | User | Allowed publish | Allowed subscribe |
 |------|----------------|-------------------|
-| publisher | `msg.raw` | `_INBOX.>` |
+| publisher | `msg.raw`, `_INBOX.>` | `_INBOX.>` |
 | subscriber | `_INBOX.>` | `msg.raw`, `msg.enhanced`, `_INBOX.>` |
 | processor | `msg.enhanced`, `_INBOX.>` | `msg.raw`, `_INBOX.>` |
 
@@ -91,17 +91,15 @@ The `_INBOX.>` wildcard is required because the nats.go client uses
 request-reply internally during connection setup. Without it, connections fail
 with a permissions error.
 
-The deny rules (`--deny-sub ">"` on publisher, `--deny-pub ">"` on subscriber
-and processor) prevent wildcard access — each user is locked to exactly the
-subjects listed above.
+With only allow lists specified, NATS implicitly denies access to any subject
+not listed — each user is locked to exactly the subjects above.
 
 **Example:** the publisher's permissions are set with:
 
 ```bash
 nsc edit user --name publisher --account PIPELINE \
-    --allow-pub "msg.raw" \
-    --allow-sub "_INBOX.>" \
-    --deny-sub ">"
+    --allow-pub "msg.raw,_INBOX.>" \
+    --allow-sub "_INBOX.>"
 ```
 
 This means `publisher` can put messages onto `msg.raw` but cannot subscribe to
@@ -303,9 +301,9 @@ will fail. For example, trying to subscribe with the publisher's credentials:
 go run ./cmd/subscriber --creds creds/publisher.creds --subject msg.raw
 ```
 
-This will fail because `publisher` is denied subscribe access to `>` (everything
-except `_INBOX.>`). You should see a permissions violation error from the
-server.
+This will fail because `publisher` only has subscribe access to `_INBOX.>` —
+NATS implicitly denies everything not in the allow list. You should see a
+permissions violation error from the server.
 
 Similarly, the subscriber cannot publish:
 
@@ -313,8 +311,8 @@ Similarly, the subscriber cannot publish:
 go run ./cmd/publisher --creds creds/subscriber.creds --message "sneaky"
 ```
 
-This fails because `subscriber` is denied publish access to `>` (everything
-except `_INBOX.>`).
+This fails because `subscriber` only has publish access to `_INBOX.>` — NATS
+implicitly denies everything not in the allow list.
 
 ---
 

@@ -25,21 +25,17 @@ setup-nsc: ## Create operator, account, and users with subject permissions
 	nsc add user --name postprocessor  --account $(ACCOUNT)
 	@echo "==> Setting subject permissions ..."
 	nsc edit user --name publisher  --account $(ACCOUNT) \
-		--allow-pub "msg.raw" \
-		--allow-sub "_INBOX.>" \
-		--deny-sub ">"
+		--allow-pub "msg.raw,_INBOX.>" \
+		--allow-sub "_INBOX.>"
 	nsc edit user --name subscriber --account $(ACCOUNT) \
 		--allow-sub "msg.raw,msg.enhanced,msg.final,_INBOX.>" \
-		--allow-pub "_INBOX.>" \
-		--deny-pub ">"
+		--allow-pub "_INBOX.>"
 	nsc edit user --name processor  --account $(ACCOUNT) \
 		--allow-sub "msg.raw,_INBOX.>" \
-		--allow-pub "msg.enhanced,_INBOX.>" \
-		--deny-pub ">"
+		--allow-pub "msg.enhanced,_INBOX.>"
 	nsc edit user --name postprocessor --account $(ACCOUNT) \
 		--allow-sub "msg.enhanced,_INBOX.>" \
-		--allow-pub "msg.final,_INBOX.>" \
-		--deny-pub ">"
+		--allow-pub "msg.final,_INBOX.>"
 	@echo "==> Done. Run 'make server-config' next."
 
 # ---------------------------------------------------------------------------
@@ -67,7 +63,7 @@ run-server: ## Start nats-server (foreground)
 	nats-server -c ./nats-server.conf
 
 push-accounts: ## Push account JWTs to running server
-	nsc push --all --system-account SYS
+	nsc push --all --system-account SYS --account-jwt-server-url nats://localhost:4222
 
 run-subscriber: ## Run subscriber listening on msg.final
 	go run ./cmd/subscriber --subject msg.final --creds $(CREDS_DIR)/subscriber.creds
