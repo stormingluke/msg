@@ -1,4 +1,4 @@
-.PHONY: setup-nsc server-config creds run-server push-accounts \
+.PHONY: setup-nsc setup-scp server-config creds run-server push-accounts \
        run-subscriber run-processor run-postprocessor run-publisher demo clean help
 
 NSC_STORE := $(HOME)/.local/share/nats/nsc/stores
@@ -97,6 +97,15 @@ demo: ## Print instructions for running the full pipeline
 	@echo ""
 	@echo "The subscriber should print 5 messages with both processor and postprocessor metadata."
 	@echo ""
+
+# ---------------------------------------------------------------------------
+# SCP-based setup (alternative to setup-nsc + creds)
+# ---------------------------------------------------------------------------
+setup-scp: ## Create users and download creds via SCP API
+	go run ./cmd/scp setup \
+		--base-url $(SCP_BASE_URL) --token $(SCP_TOKEN) \
+		--system $(SCP_SYSTEM_ID) --account $(SCP_ACCOUNT_ID) \
+		--sk-group $(SCP_SK_GROUP_ID)
 
 clean: ## Remove generated creds, data, config, and binaries
 	rm -rf $(CREDS_DIR) nats-data nats-server.conf
