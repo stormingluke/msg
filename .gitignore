@@ -1,0 +1,16 @@
+# Binaries
+publisher
+subscriber
+processor
+
+# nsc-generated credentials (contain private keys — never commit)
+creds/
+
+# nats-server resolver data
+nats-data/
+
+# Generated server config
+nats-server.conf
+
+# IDE
+.idea/
